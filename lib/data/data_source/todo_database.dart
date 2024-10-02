@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:to_do_app/data/network/database_service.dart';
+import 'package:to_do_app/domain/models/task.dart';
 
 class TodoDatabase {
   final taskTableName = 'tasks';
@@ -37,11 +38,26 @@ class TodoDatabase {
     return task.first;
   }
 
-  Future<bool> deleteTaskById(int taskId) async {
+  Future<bool> addTask(Task task) async {
+    final database = await DatabaseService().database;
+    var taskData = {
+      taskName: task.name,
+      taskDescription: task.description,
+      taskCreateAt: task.createDate,
+      taskDeadline: task.deadline,
+      taskPriority: task.priority,
+      taskDone: task.isDone
+    };
+    final result = await database.insert(taskTableName, taskData,
+        conflictAlgorithm: ConflictAlgorithm.replace);
+    return result > 0;
+  }
+
+  Future<bool> deleteTaskById(int taskDeleteId) async {
     try {
       final database = await DatabaseService().database;
-      final result = await database
-          .delete(taskTableName, where: '$taskId = ?', whereArgs: [taskId]);
+      final result = await database.delete(taskTableName,
+          where: '$taskId = ?', whereArgs: [taskDeleteId]);
       return result > 0;
     } catch (e) {
       return false;
@@ -61,11 +77,12 @@ class TodoDatabase {
     }
   }
 
-  Future<bool> updateTask(int taskId, Map<String, Object?> task) async {
+  Future<bool> updateTask(int updateTaskId, Map<String, Object?> task) async {
     try {
+      task.remove('id');
       final database = await DatabaseService().database;
       final result = await database.update(taskTableName, task,
-          where: '$taskId = ?', whereArgs: [taskId]);
+          where: '$taskId = ?', whereArgs: [updateTaskId]);
       return result > 0;
     } catch (e) {
       e.toString();

@@ -1,8 +1,16 @@
-class TaskState {
-  List<Map<String, Object?>> listTask;
-  TaskState copyWith(List<Map<String, Object?>> data) {
-    return TaskState(data);
+import 'package:equatable/equatable.dart';
+
+class TaskState extends Equatable {
+  final List<Map<String, Object?>> listTask;
+  final int filterValue;
+
+  TaskState copyWith(List<Map<String, Object?>>? data, int? filterValue) {
+    return TaskState(data ?? listTask,
+        filterValue: filterValue ?? this.filterValue);
   }
 
-  TaskState(this.listTask);
+  const TaskState(this.listTask, {this.filterValue = 0});
+
+  @override
+  List<Object?> get props => [listTask, filterValue];
 }

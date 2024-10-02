@@ -49,16 +49,13 @@ class HomePageScreen extends StatelessWidget {
                 ),
                 Expanded(
                   child: state.listTask.isEmpty
-                      ? const Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Expanded(
-                              child: Center(
-                            child: Text(
-                              "There is no task to do, let's add one!",
-                              style: TextStyle(color: AppColor.textColor),
-                              textAlign: TextAlign.center,
-                            ),
-                          )))
+                      ? const Center(
+                          child: Text(
+                            "There is no task to do, let's add one!",
+                            style: TextStyle(color: AppColor.textColor),
+                            textAlign: TextAlign.center,
+                          ),
+                        )
                       : ListView.builder(
                           itemCount: state.listTask.length,
                           padding: const EdgeInsets.all(16),

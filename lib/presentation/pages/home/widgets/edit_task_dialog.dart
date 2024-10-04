@@ -78,65 +78,102 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
                 hint: "Task Name",
                 isAutoFocus: true,
               ),
+              const SizedBox(
+                height: 8,
+              ),
               AppTextField(
                 controller: descriptionController,
                 hint: "Description",
               ),
               const SizedBox(
-                height: 4,
+                height: 8,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   GestureDetector(
-                    onTap: () async {
-                      DateTime? selectedDate = await showDatePicker(
-                        context: context,
-                        firstDate: DateTime(1900),
-                        lastDate: DateTime(3000),
-                        initialDate: DateTime(taskDeadline.year,
-                            taskDeadline.month, taskDeadline.day),
-                        initialEntryMode: DatePickerEntryMode.input,
-                        confirmText: "Choose Date",
-                      );
+                      onTap: () async {
+                        DateTime? selectedDate = await showDatePicker(
+                          builder: (context, child) {
+                            return Theme(
+                                data: Theme.of(context).copyWith(
+                                    colorScheme: const ColorScheme.light(
+                                        primary: AppColor.buttonColor,
+                                        onPrimary:
+                                            AppColor.primaryBackgroundColor,
+                                        onSurface: AppColor.buttonColor),
+                                    textButtonTheme: TextButtonThemeData(
+                                        style: TextButton.styleFrom(
+                                            foregroundColor:
+                                                AppColor.buttonColor))),
+                                child: child!);
+                          },
+                          context: context,
+                          firstDate: DateTime(1900),
+                          lastDate: DateTime(3000),
+                          initialDate: DateTime(taskDeadline.year,
+                              taskDeadline.month, taskDeadline.day),
+                          initialEntryMode: DatePickerEntryMode.input,
+                          confirmText: "Choose Date",
+                        );
 
-                      if (selectedDate != null) {
-                        TimeOfDay? selectedTime = await showTimePicker(
-                            // ignore: use_build_context_synchronously
-                            context: context,
-                            initialTime: TimeOfDay(
-                                hour: taskDeadline.hour,
-                                minute: taskDeadline.minute));
-                        if (selectedTime != null) {
-                          DateTime updateTime = DateTime(
-                              selectedDate.year,
-                              selectedDate.month,
-                              selectedDate.day,
-                              selectedTime.hour,
-                              selectedTime.minute);
-                          setState(() {
-                            taskDeadline = updateTime;
-                            widget.task.deadline = updateTime.toIso8601String();
-                          });
+                        if (selectedDate != null) {
+                          TimeOfDay? selectedTime = await showTimePicker(
+                              builder: (context, child) {
+                                return Theme(
+                                    data: Theme.of(context).copyWith(
+                                        colorScheme: const ColorScheme.light(
+                                            primary: AppColor.buttonColor,
+                                            onPrimary:
+                                                AppColor.primaryBackgroundColor,
+                                            onSurface: AppColor.buttonColor),
+                                        textButtonTheme: TextButtonThemeData(
+                                            style: TextButton.styleFrom(
+                                                foregroundColor:
+                                                    AppColor.buttonColor))),
+                                    child: child!);
+                              },
+                              // ignore: use_build_context_synchronously
+                              context: context,
+                              initialTime: TimeOfDay(
+                                  hour: taskDeadline.hour,
+                                  minute: taskDeadline.minute));
+                          if (selectedTime != null) {
+                            DateTime updateTime = DateTime(
+                                selectedDate.year,
+                                selectedDate.month,
+                                selectedDate.day,
+                                selectedTime.hour,
+                                selectedTime.minute);
+                            setState(() {
+                              taskDeadline = updateTime;
+                              widget.task.deadline =
+                                  updateTime.toIso8601String();
+                            });
+                          }
                         }
-                      }
-                    },
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.timer_outlined,
-                          color: AppColor.hintColor,
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                            color: AppColor.primaryBackgroundColor,
+                            borderRadius: BorderRadius.circular(8)),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.timer_outlined,
+                              color: AppColor.hintColor,
+                            ),
+                            const SizedBox(
+                              width: 4,
+                            ),
+                            Text(
+                              "${taskDeadline.day.toString().padLeft(2, '0')}/${taskDeadline.month.toString().padLeft(2, '0')} At ${taskDeadline.hour.toString().padLeft(2, '0')}:${taskDeadline.minute.toString().padLeft(2, '0')}",
+                              style: const TextStyle(color: AppColor.hintColor),
+                            )
+                          ],
                         ),
-                        const SizedBox(
-                          width: 4,
-                        ),
-                        Text(
-                          "${taskDeadline.day.toString().padLeft(2, '0')}/${taskDeadline.month.toString().padLeft(2, '0')} At ${taskDeadline.hour.toString().padLeft(2, '0')}:${taskDeadline.minute.toString().padLeft(2, '0')}",
-                          style: const TextStyle(color: AppColor.hintColor),
-                        )
-                      ],
-                    ),
-                  ),
+                      )),
                   GestureDetector(
                     onTap: () {
                       int selectedIndex = widget.task.priority - 1;
@@ -188,11 +225,12 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
                                                   color: index == selectedIndex
                                                       ? AppColor.buttonColor
                                                       : AppColor
-                                                          .dialogItemColor,
+                                                          .primaryButtonColor,
                                                   shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4)),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            4),
+                                                  ),
                                                   child: Padding(
                                                     padding: const EdgeInsets
                                                         .symmetric(
@@ -202,21 +240,28 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
                                                       mainAxisSize:
                                                           MainAxisSize.min,
                                                       children: [
-                                                        Image.asset(
-                                                          'lib/app/assets/ic_flag.png',
-                                                          width: 16,
-                                                          height: 16,
-                                                        ),
+                                                        Icon(
+                                                            Icons.flag_outlined,
+                                                            size: 16,
+                                                            color: index ==
+                                                                    selectedIndex
+                                                                ? AppColor
+                                                                    .primaryBackgroundColor
+                                                                : AppColor
+                                                                    .buttonColor),
                                                         const SizedBox(
                                                           width: 4,
                                                         ),
                                                         Text(
-                                                            (index +
-                                                                    1)
+                                                            (index + 1)
                                                                 .toString(),
-                                                            style: const TextStyle(
-                                                                color: AppColor
-                                                                    .textColor,
+                                                            style: TextStyle(
+                                                                color: index ==
+                                                                        selectedIndex
+                                                                    ? AppColor
+                                                                        .primaryBackgroundColor
+                                                                    : AppColor
+                                                                        .buttonColor,
                                                                 fontSize: 12))
                                                       ],
                                                     ),
@@ -236,7 +281,7 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
                                                   borderRadius:
                                                       BorderRadius.circular(4)),
                                               backgroundColor:
-                                                  Colors.transparent,
+                                                  AppColor.primaryButtonColor,
                                               padding: const EdgeInsets.all(8)),
                                           child: const Text(
                                             "Cancel",
@@ -265,7 +310,8 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
                                           child: const Text(
                                             "Save",
                                             style: TextStyle(
-                                              color: AppColor.textColor,
+                                              color: AppColor
+                                                  .primaryBackgroundColor,
                                             ),
                                           ),
                                         ))
@@ -289,10 +335,10 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Image.asset(
-                              'lib/app/assets/ic_flag.png',
-                              width: 16,
-                              height: 16,
+                            const Icon(
+                              Icons.flag_outlined,
+                              color: AppColor.buttonColor,
+                              size: 16,
                             ),
                             const SizedBox(
                               width: 4,
@@ -308,6 +354,9 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
                   )
                 ],
               ),
+              const SizedBox(
+                height: 4,
+              ),
               Row(
                 children: [
                   Expanded(
@@ -317,8 +366,8 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
                     },
                     style: TextButton.styleFrom(
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4)),
-                        backgroundColor: Colors.transparent,
+                            borderRadius: BorderRadius.circular(32)),
+                        backgroundColor: AppColor.primaryButtonColor,
                         padding: const EdgeInsets.all(8)),
                     child: const Text(
                       "Cancel",
@@ -344,11 +393,11 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
                         backgroundColor: AppColor.buttonColor,
                         padding: const EdgeInsets.all(8),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4))),
+                            borderRadius: BorderRadius.circular(32))),
                     child: const Text(
                       "Confirm",
                       style: TextStyle(
-                        color: AppColor.textColor,
+                        color: AppColor.primaryBackgroundColor,
                       ),
                     ),
                   ))

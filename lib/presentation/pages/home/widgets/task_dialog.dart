@@ -56,8 +56,8 @@ class TaskDialog extends StatelessWidget {
                     },
                     style: TextButton.styleFrom(
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4)),
-                        backgroundColor: Colors.transparent,
+                            borderRadius: BorderRadius.circular(32)),
+                        backgroundColor: AppColor.primaryButtonColor,
                         padding: const EdgeInsets.all(8)),
                     child: const Text(
                       "Cancel",
@@ -79,11 +79,11 @@ class TaskDialog extends StatelessWidget {
                         backgroundColor: AppColor.buttonColor,
                         padding: const EdgeInsets.all(8),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4))),
+                            borderRadius: BorderRadius.circular(32))),
                     child: const Text(
                       "Dealine",
                       style: TextStyle(
-                        color: AppColor.textColor,
+                        color: AppColor.primaryBackgroundColor,
                       ),
                     ),
                   ))

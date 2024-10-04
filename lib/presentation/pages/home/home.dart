@@ -1,16 +1,13 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:to_do_app/app/resources/color_manager.dart';
 import 'package:to_do_app/domain/models/task.dart';
 import 'package:to_do_app/presentation/cubit/task_cubit.dart';
 import 'package:to_do_app/presentation/cubit/task_state.dart';
-import 'package:to_do_app/presentation/pages/home/widgets/edit_task_dialog.dart';
-import 'package:to_do_app/presentation/pages/home/widgets/filter_dropdown.dart';
+import 'package:to_do_app/presentation/pages/home/widgets/tab_screen.dart';
 import 'package:to_do_app/presentation/pages/home/widgets/task_dialog.dart';
-import 'package:to_do_app/presentation/pages/home/widgets/task_item.dart';
 
-class HomePageScreen extends StatelessWidget {
+class HomePageScreen extends StatefulWidget {
   const HomePageScreen(
       {super.key, required this.title, required this.taskCubit});
 
@@ -18,153 +15,121 @@ class HomePageScreen extends StatelessWidget {
   final TaskCubit taskCubit;
 
   @override
-  Widget build(BuildContext context) {
+  State<HomePageScreen> createState() => _HomePageScreenState();
+}
+
+class _HomePageScreenState extends State<HomePageScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) {
+        setState(() {});
+        if (_tabController.index == 0) {
+          widget.taskCubit.getAllTasks();
+        } else if (_tabController.index == 1) {
+          widget.taskCubit.filterTask(false);
+        } else if (_tabController.index == 2) {
+          widget.taskCubit.filterTask(true);
+        }
+      }
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(Object context) {
     String taskName = "", taskDescription = "";
     DateTime? selectedDate;
     TimeOfDay? selectedTime;
-    int filterValue = 0;
-
     return Scaffold(
       backgroundColor: AppColor.primaryBackgroundColor,
       appBar: AppBar(
         title: Text(
-          title,
+          widget.title,
           style: const TextStyle(color: AppColor.textColor),
           textAlign: TextAlign.center,
         ),
         backgroundColor: AppColor.primaryBackgroundColor,
-      ),
-      body: BlocProvider(
-          create: (context) => taskCubit..getAllTasks(),
-          child: BlocBuilder<TaskCubit, TaskState>(builder: (context, state) {
-            return Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: FilterDropdown(
-                    onItemSelectedChange: (value) =>
-                        {taskCubit.updateFilterValue(value)},
-                    selectedIndex: state.filterValue,
-                  ),
+        bottom: TabBar(
+          padding: const EdgeInsets.all(16),
+          labelPadding: EdgeInsets.zero,
+          controller: _tabController,
+          isScrollable: false,
+          indicatorColor: Colors.transparent,
+          dividerColor: Colors.transparent,
+          labelColor: AppColor.primaryBackgroundColor,
+          unselectedLabelColor: AppColor.tabUnfocusedTextColor,
+          tabs: [
+            Tab(
+              iconMargin: const EdgeInsets.all(0),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: _tabController.index == 0
+                      ? AppColor.buttonColor
+                      : AppColor.tabUnfocusedBackgroundColor,
                 ),
-                Expanded(
-                  child: state.listTask.isEmpty
-                      ? const Center(
-                          child: Text(
-                            "There is no task to do, let's add one!",
-                            style: TextStyle(color: AppColor.textColor),
-                            textAlign: TextAlign.center,
-                          ),
-                        )
-                      : ListView.builder(
-                          itemCount: state.listTask.length,
-                          padding: const EdgeInsets.all(16),
-                          itemBuilder: (context, index) {
-                            final item = state.listTask[index];
-                            Task taskObject = Task.fromMap(item);
-                            return Column(
-                              children: [
-                                TaskItem(
-                                  task: taskObject,
-                                  onMarkAsComplete: (value) {
-                                    taskCubit.updateTask(
-                                        taskObject.id,
-                                        {
-                                          'id': taskObject.id,
-                                          'name': taskObject.name,
-                                          'description': taskObject.description,
-                                          'create_at': taskObject.createDate,
-                                          'deadline': taskObject.deadline,
-                                          'priority': taskObject.priority,
-                                          'is_done': value ? 1 : 0,
-                                        },
-                                        filterValue);
-                                  },
-                                  onEditTask: () {
-                                    showDialog(
-                                        context: context,
-                                        barrierDismissible: true,
-                                        builder: (context) => EditTaskDialog(
-                                            task: taskObject,
-                                            onConfirm: (updateTask) {
-                                              taskCubit.updateTask(
-                                                  taskObject.id,
-                                                  {
-                                                    'id': taskObject.id,
-                                                    'name': taskObject.name,
-                                                    'description':
-                                                        taskObject.description,
-                                                    'create_at':
-                                                        taskObject.createDate,
-                                                    'deadline':
-                                                        taskObject.deadline,
-                                                    'priority':
-                                                        taskObject.priority,
-                                                    'is_done':
-                                                        taskObject.isDone,
-                                                  },
-                                                  filterValue);
-                                            },
-                                            onDismiss: () {
-                                              Navigator.of(context).pop();
-                                            }));
-                                  },
-                                  onDeleteTask: () {
-                                    showDialog(
-                                        context: context,
-                                        barrierDismissible: true,
-                                        builder: (context) => AlertDialog(
-                                              backgroundColor:
-                                                  AppColor.taskItemColor,
-                                              title: const Text(
-                                                "Delete Task?",
-                                                style: TextStyle(
-                                                    color: AppColor.textColor),
-                                              ),
-                                              content: const Text(
-                                                "Are you sure to delete this task?",
-                                                style: TextStyle(
-                                                    color: AppColor.hintColor),
-                                              ),
-                                              actions: [
-                                                CupertinoDialogAction(
-                                                  textStyle: const TextStyle(
-                                                      color:
-                                                          AppColor.buttonColor),
-                                                  onPressed: () {
-                                                    taskCubit.deleteTaskById(
-                                                        taskObject.id);
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                  child: const Text("OK"),
-                                                ),
-                                                CupertinoDialogAction(
-                                                  textStyle: const TextStyle(
-                                                      color:
-                                                          AppColor.buttonColor),
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                  child: const Text("No"),
-                                                )
-                                              ],
-                                            ));
-                                  },
-                                ),
-                                const SizedBox(
-                                  height: 8,
-                                )
-                              ],
-                            );
-                          }),
-                )
-              ],
-            );
-          })),
+                child: const Center(child: Text("All")),
+              ),
+            ),
+            Tab(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: _tabController.index == 1
+                      ? AppColor.buttonColor
+                      : AppColor.tabUnfocusedBackgroundColor,
+                ),
+                child: const Center(
+                    child: Text(
+                  "In Progress",
+                  maxLines: 1,
+                )),
+              ),
+            ),
+            Tab(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: _tabController.index == 2
+                      ? AppColor.buttonColor
+                      : AppColor.tabUnfocusedBackgroundColor,
+                ),
+                child: const Center(child: Text("Done", maxLines: 1)),
+              ),
+            )
+          ],
+        ),
+      ),
+      body: DefaultTabController(
+          length: 3,
+          child: BlocProvider(
+            create: (context) => widget.taskCubit..getAllTasks(),
+            child: BlocBuilder<TaskCubit, TaskState>(builder: (context, state) {
+              return TabBarView(controller: _tabController, children: [
+                TabScreen(
+                    taskCubit: widget.taskCubit, filterValue: 0, state: state),
+                TabScreen(
+                    taskCubit: widget.taskCubit, filterValue: 1, state: state),
+                TabScreen(
+                    taskCubit: widget.taskCubit, filterValue: 2, state: state)
+              ]);
+            }),
+          )),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final result = await showDialog(
-              context: context,
+              context: this.context,
               builder: (context) => TaskDialog(
                     onConfirm: (name, description) {
                       if (name.toString().isNotEmpty) {
@@ -181,8 +146,20 @@ class HomePageScreen extends StatelessWidget {
                   ));
           if (result != null) {
             selectedDate = await showDatePicker(
+              builder: (context, child) {
+                return Theme(
+                    data: Theme.of(context).copyWith(
+                        colorScheme: const ColorScheme.light(
+                            primary: AppColor.buttonColor,
+                            onPrimary: AppColor.primaryBackgroundColor,
+                            onSurface: AppColor.buttonColor),
+                        textButtonTheme: TextButtonThemeData(
+                            style: TextButton.styleFrom(
+                                foregroundColor: AppColor.buttonColor))),
+                    child: child!);
+              },
               // ignore: use_build_context_synchronously
-              context: context,
+              context: this.context,
               firstDate: DateTime(1900),
               lastDate: DateTime(3000),
               initialDate: DateTime.now(),
@@ -192,8 +169,20 @@ class HomePageScreen extends StatelessWidget {
 
             if (selectedDate != null) {
               selectedTime = await showTimePicker(
+                  builder: (context, child) {
+                    return Theme(
+                        data: Theme.of(context).copyWith(
+                            colorScheme: const ColorScheme.light(
+                                primary: AppColor.buttonColor,
+                                onPrimary: AppColor.primaryBackgroundColor,
+                                onSurface: AppColor.buttonColor),
+                            textButtonTheme: TextButtonThemeData(
+                                style: TextButton.styleFrom(
+                                    foregroundColor: AppColor.buttonColor))),
+                        child: child!);
+                  },
                   // ignore: use_build_context_synchronously
-                  context: context,
+                  context: this.context,
                   initialTime: TimeOfDay.now());
             }
 
@@ -201,7 +190,7 @@ class HomePageScreen extends StatelessWidget {
               final time = DateTime(selectedDate!.year, selectedDate!.month,
                   selectedDate!.day, selectedTime!.hour, selectedTime!.minute);
 
-              taskCubit.addTask(Task(
+              widget.taskCubit.addTask(Task(
                   id: 0,
                   name: taskName,
                   description: taskDescription,
@@ -218,7 +207,7 @@ class HomePageScreen extends StatelessWidget {
         backgroundColor: AppColor.buttonColor,
         child: const Icon(
           Icons.add,
-          color: AppColor.textColor,
+          color: AppColor.primaryBackgroundColor,
         ),
       ),
     );

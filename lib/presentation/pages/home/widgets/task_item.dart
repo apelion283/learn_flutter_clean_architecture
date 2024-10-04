@@ -24,74 +24,84 @@ class _TaskItemState extends State<TaskItem> {
   Widget build(BuildContext context) {
     bool isChecked = widget.task.isDone == 1;
     return GestureDetector(
-      onLongPress: () {
-        widget.onDeleteTask();
-      },
-      onTap: () {
-        widget.onEditTask();
-      },
-      child: ListTile(
-        leading: Checkbox(
-            value: isChecked,
-            onChanged: (bool? newValue) {
-              setState(() {
-                isChecked = newValue!;
-                widget.task.isDone = isChecked ? 1 : 0;
-                widget.onMarkAsComplete(isChecked);
-              });
-            }),
-        title: Row(
-          children: [
-            Flexible(
-              child: Text(widget.task.name,
-                  style: TextStyle(
-                    color: AppColor.textColor,
-                    decoration: widget.task.isDone == 1
-                        ? TextDecoration.lineThrough
-                        : TextDecoration.none,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis),
-            )
-          ],
-        ),
-        subtitle: Text(
-          getDisplayTime(DateTime.parse(widget.task.deadline)),
-          style: TextStyle(
-              color: AppColor.hintColor,
-              decoration: widget.task.isDone == 1
-                  ? TextDecoration.lineThrough
-                  : TextDecoration.none),
-        ),
-        trailing: Card(
-          color: AppColor.taskItemColor,
-          shape: RoundedRectangleBorder(
-              side: const BorderSide(color: AppColor.buttonColor, width: 1),
-              borderRadius: BorderRadius.circular(4)),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+        onLongPress: () {
+          widget.onDeleteTask();
+        },
+        onTap: () {
+          widget.onEditTask();
+        },
+        child: Container(
+          decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(
+                  bottomRight: Radius.circular(8),
+                  topRight: Radius.circular(8)),
+              border: Border(
+                  left: BorderSide(color: AppColor.buttonColor, width: 2)),
+              color: AppColor.taskItemColor),
+          child: ListTile(
+            leading: Checkbox(
+              side: const BorderSide(color: AppColor.buttonColor, width: 2),
+              value: isChecked,
+              onChanged: (bool? newValue) {
+                setState(() {
+                  isChecked = newValue!;
+                  widget.task.isDone = isChecked ? 1 : 0;
+                  widget.onMarkAsComplete(isChecked);
+                });
+              },
+              activeColor: AppColor.buttonColor,
+            ),
+            title: Row(
               children: [
-                Image.asset(
-                  'lib/app/assets/ic_flag.png',
-                  width: 16,
-                  height: 16,
-                ),
-                const SizedBox(
-                  width: 4,
-                ),
-                Text(widget.task.priority.toString(),
-                    style: const TextStyle(
-                      color: AppColor.textColor,
-                    ))
+                Flexible(
+                  child: Text(widget.task.name,
+                      style: TextStyle(
+                        color: AppColor.textColor,
+                        decoration: widget.task.isDone == 1
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+                )
               ],
             ),
+            subtitle: Text(
+              getDisplayTime(DateTime.parse(widget.task.deadline)),
+              style: TextStyle(
+                  color: AppColor.hintColor,
+                  decoration: widget.task.isDone == 1
+                      ? TextDecoration.lineThrough
+                      : TextDecoration.none),
+            ),
+            trailing: Card(
+              color: AppColor.taskItemColor,
+              shape: RoundedRectangleBorder(
+                  side: const BorderSide(color: AppColor.buttonColor, width: 1),
+                  borderRadius: BorderRadius.circular(4)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.flag_outlined,
+                      color: AppColor.buttonColor,
+                      size: 16,
+                    ),
+                    const SizedBox(
+                      width: 4,
+                    ),
+                    Text(widget.task.priority.toString(),
+                        style: const TextStyle(
+                          color: AppColor.textColor,
+                        ))
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
-        tileColor: AppColor.taskItemColor,
-      ),
-    );
+        ));
   }
 }
 
